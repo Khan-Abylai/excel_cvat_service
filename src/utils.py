@@ -50,7 +50,7 @@ def get_unique_filename(file_path):
 def save_crop(img_name, bbox_orig, destination):
     image_path = img_name
     original_image = Image.open(image_path)
-    original_image = ImageOps.exif_transpose(original_image)  # Применяем ориентацию EXIF
+    original_image = ImageOps.exif_transpose(original_image)  # EXIF
     cropped_image = original_image.crop(bbox_orig)
     cropped_image.save(destination)
 
@@ -220,7 +220,7 @@ def get_image_size_with_aspect_ratio(image_path, max_width):
         if original_width > max_width:
             scaling_factor = max_width / original_width
             new_width = max_width
-            new_height = int(original_height * scaling_factor)
+            new_height = original_height * scaling_factor
             return new_width, new_height
         else:
             return original_width, original_height

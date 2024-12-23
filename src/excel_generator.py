@@ -9,7 +9,7 @@ import src.config as config
 
 import sys
 
-def generate_excel(images_changed_data, data_folder, cover_all, visualize=False):
+def generate_excel(images_changed_data, data_folder, cover_all, visualize=True):
     """
     Генерирует Excel-файл с информацией об обработанных изображениях и вставляет обрезанные изображения.
     При необходимости визуализирует аннотации на исходных изображениях.
@@ -27,17 +27,16 @@ def generate_excel(images_changed_data, data_folder, cover_all, visualize=False)
     copied_data = deepcopy(images_changed_data)
 
     for image_data in copied_data:
-        children = image_data.get('children', {})
-        boxes = children.get('box', [])
-
         label_groups = {}
-        for changed_point in boxes:
-            label = changed_point.get('label', '').lower()
-            if label == 'ignore':
+        for changed_point in image_data['children']['box']:
+            if changed_point['label'] == 'ignore':
                 continue
-            if label not in label_groups:
-                label_groups[label] = []
-            label_groups[label].append(changed_point)
+            else:
+            # if cover_all is True or changed_point['label'] != 'ignore':
+                label = changed_point['label']
+                if label not in label_groups:
+                    label_groups[label] = []
+                label_groups[label].append(changed_point)
 
         for label, points in label_groups.items():
             image_file_paths = []
@@ -120,7 +119,7 @@ def generate_excel(images_changed_data, data_folder, cover_all, visualize=False)
             visualize_annotations(image_path, annotations, visualization_folder, output_image_filename)
 
     # Устанавливаем ширину столбцов для изображений
-    for i, max_width in enumerate(max_image_widths, start=config.headers_count + 1):
+    for i, max_width in enumerate(max_image_widths, start=config.headers_count):
         if max_width > 0:
             ws.column_dimensions[get_column_letter(i)].width = pixels_to_width_units(max_width)
 
@@ -131,7 +130,6 @@ def generate_excel(images_changed_data, data_folder, cover_all, visualize=False)
     # Сохраняем Excel-файл
     output_path = os.path.join(data_folder, 'output.xlsx')
     wb.save(output_path)
-    print(f"Excel-файл сохранён как {output_path}")
 
     # Удаляем точки из 'images_changed_data' после визуализации и сохранения Excel
     for image_data in images_changed_data:
